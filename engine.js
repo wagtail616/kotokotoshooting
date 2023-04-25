@@ -50,3 +50,25 @@ class AssetLoader{ //アセット(画像等)を読み込むためのクラス
     }
 }
     const assets =new AssetLoader();
+
+    class EventDispatcher{//イベントを起こす
+        constructor(){
+            this._eventListeners = {};
+        }
+        addEventListener(tyoe,callback){
+            if(this._eventListeners[type] == undefined){
+                this._eventListeners[type] =[];
+            }
+            thid._eventListeners[type].push(callback);
+        }
+        dispatchEvent(type,event){
+            const listeners = this._eventListeners[type];
+            if(listeners != undefined) listeners.forEach( (callback)=>callback(event));
+        }
+    }
+
+    class GameEvent{//イベント用のクラス？
+        constructor(target){
+            this.target=target;
+        }
+    }
