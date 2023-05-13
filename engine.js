@@ -72,3 +72,74 @@ class AssetLoader{ //アセット(画像等)を読み込むためのクラス
             this.target=target;
         }
     }
+
+    class Actor extends EventDispatcher{
+        constructor(x,y,hitArea,tag = []){
+            super();
+            this.hitArea =hitArea;
+            this._hitAreaOffsetX =hitArea.x;
+            this._hitAreaOffsetY =hitArea.y;
+            this.tags = tags;
+
+            this.x = x;
+            this.y = y;
+        }
+
+        update(gameInfo,input){}
+
+        render(target){}
+
+        hasTag(tagName){
+            return this.tags.includes(tagName);
+        }
+        sppawmActor(actor){
+            this.dispatchEvent('spawnactor',new GameEvent(actor));
+        }
+        destroy(){
+            this.dispatchEvent('destroy', new GameEvent(this));
+        }
+        get x(){
+            return this._x;
+        }
+        set x(value){
+            this._x = value;
+            this.hitArea.x =value + this._hitAreaOffsetX;
+        }
+        
+        get y(){
+            return this._y;
+        }
+        set y(value){
+            this._y = value;
+            this.hitArea.y =value + this._hitAreaOffsetY;
+        }
+    }
+
+class SpriteActor extends Actor {
+    constructor(x,y,Sprite,hitArea,tags=[]){
+        super(x,y,hitArea,tags);
+        this.sprite=sprite;
+        this.sprite=sprite.rectangle.width;
+        this.sprite=sprite.rectangle.height;
+    }
+    
+    render(target){
+        const context = target.getContext('2d');
+        const rect = this.sprite.rectangle;
+        context.drawImage(this.sprite.image,
+            rect.x,rect.y,
+            rect.width,rect.height,);
+    }
+    isOutOfBounds(boundRect){
+        const actorLeft = this.x;
+        const actorRight = this.x+this.width;
+        const actorTop = this.y;
+        const actorBottom = this.y+this.height;
+    
+    const horizontal =(actorRight<boundRect.x || actorLeft > boundRect.width);
+    const vertical = (actorBottom<boundRect.y || actorTop >boundRect.height);
+    
+    return (horizontal|| vertical)
+    }
+
+}
