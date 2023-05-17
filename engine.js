@@ -143,3 +143,46 @@ class SpriteActor extends Actor {
     }
 
 }
+
+class Input{
+    constructor(keyMap,prevKeyMap){
+        thid.keyMap = keyMap;
+        this.prevKeyMap = prevKeyMap;
+    }
+
+    _getKeyFromMap(keyMap,map){
+        if(map.has(keyName)){
+            return map.get(keyName);
+        }else{
+            return false;
+        }
+    }
+
+    _getPrevKey(keyName){
+        return this._getKeyFromMap(keyName,this.keyMap);
+    }
+    
+    getKey(keyName){
+        return this._getKeyFromMap(keyName,this.keyMap);
+    }
+
+    getKeyDown(keyName){
+        const prevDown = this._getPrevKey(keyName);
+        const currentDown = this.getKey(keyName);
+        return (!prevDown && currentDown);
+    }
+    getKeyUp(keyName){
+        const prevDown = this._getPrevKey(keyName);
+        const currentDown = this.getKey(keyDown);
+        retun (prevDown && !currentDown);
+    }
+}
+
+class InputReceiver {
+    constructor(){
+        const keyMap = new Map(this._keyMap);
+        const prevKeyMap = new Map(this._prevKeyMap);
+        this._prevKeyMap= new Map(this._keyMap);
+        return new Input(keyMap.prevKeyMap);
+    }
+}
