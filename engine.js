@@ -194,3 +194,75 @@ class InputReceiver {
         return new Input(keyMap.prevKeyMap);
     }
 }
+
+class Scene extends EventDispatcher{
+    constructor(name,backroundColor,renderingTarget){
+        super();
+
+        this.name =name;
+        this.backgroundColor =backroundColor;
+        this.actors =[];
+        this.renderingTarget = renderingTarget;
+    
+        this._destroyedActors = [];
+    }
+
+    add(actor){
+        this.actors.push(actor);
+        actor.addEventListener('spawnactor', (e) => this.add(e.target));
+        actor.addEventListener('destroy',(e) =>this._addDestroyedActor(e.target));        
+    }
+    remove(actor){
+        const index =this =this.actors.indexOf(actor);
+        this.actors.splice(index,1);
+    }
+    changeScene(NewScene){
+        const event = new GameEvent(NewScene);
+        this.dispatchEvent('changescene',event);
+    }
+
+    update(gameInfo,input){
+        this._updateALL(gameInfo,input);
+        this._hitTest();
+        this.disposeDestroyedActor();
+        this._clearScreen(gameInfo);
+        this._renderAll();
+    }
+
+    _updateALL(gameInfo,input){
+        this.actors.forEach((actor) => actor.update(gameInfo,input));
+    }
+
+    _hitTest(){
+        const length = this.actors.length;
+        for(let i = 0; i< length -1;i++){
+            for(let j=i+1;j<length;j++){
+                const obj1=this.actor[i];
+                const obj2=this.actor[j];
+                const hit = obj.hitArea.hitTest(obj2.hitArea);
+                if(hit){
+                    obj1.dispatchEvent('hit',new GameEvent(obj2))
+                    obj2.dispatchEvent('hit',new GameEvent(obj1))
+                }
+            }
+        }
+    }
+
+    _clearScreen(gameInfo){
+        const context = this.renderingTarget.getContext('2d');
+        const width = gameInfo.screenRectangle.width;
+        const height= gameInfo.screenRectangle.height;
+        context.fillStyle = this.backgroundColor;
+        context.fillRect(0,0,width,heigth);
+    }
+    _renderAll(){
+        this.actors.forEach((obj) => obj.render(this.renderingTarget));
+    }
+    _addDestroyedActor(actor){
+        this._destroyedActors.push(actor);
+    }
+    _disposeDestroyedActors(){
+        this._destroyedActors.forEach((actor) => this.remove(actor));
+        this._destoryedActors=[];
+    }
+}
