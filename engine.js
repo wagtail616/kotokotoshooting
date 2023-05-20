@@ -216,8 +216,8 @@ class Scene extends EventDispatcher{
         const index =this =this.actors.indexOf(actor);
         this.actors.splice(index,1);
     }
-    changeScene(NewScene){
-        const event = new GameEvent(NewScene);
+    changeScene(newScene){
+        const event = new GameEvent(newScene);
         this.dispatchEvent('changescene',event);
     }
 
@@ -266,3 +266,60 @@ class Scene extends EventDispatcher{
         this._destoryedActors=[];
     }
 }
+
+class gameInfomation{
+    constructor(title,screenRectangle,maxFps,currentFps){
+        this.title = title;
+        this.screenRectangle = screenRectangle;
+        this.maxFps = maxFps;
+        this.currentFps= currentFps;
+    }
+}
+
+class Game {
+    constructor(title,width,height,maxFps){
+        this.title = title;
+        this.width = width;
+        this.height = height;
+        this.maxFps = maxFps;
+        this.currentFps = 0;
+
+        this.screenCanvas = document.createElement('canvas');
+        this.screenCanvas.height = height;
+        this.screenCanvas.width = width;
+
+        this._inputReciver = new InputReceiver();
+        this._prevTimestamp = 0;
+        console.log('${title}が初期化されました。');
+    }
+    changeScene(newScene){
+        this.currentScene = newScene;
+        this.currentScene.addEventListener('chngescene',(e) => this.changeScene(e.target));
+        console.log('シーンが${newScene.name}に切り替わりました。');
+    }
+    start(){
+        requestAnimationFrame(this._loop.bind(this));
+    }
+
+    _loop(timestamp){
+        const elapsedSec = (timestamp - this._prevTimestamp);
+        const accuracy=0.9;//あまり厳密にするとフレームが飛ぶ
+        const frameTime = 1 /this.maxFps * accuracy;//精度を落とす
+        if(elapsedSec <= frameTime){
+            requestAnimationFrame(this._loop.bind(this));
+            return;
+        }
+        this._prevTimestamp =timestamp;
+        this.currentFps = 1/ elapsedSec;
+        
+        const screenRectangle = new Rectangle(0,0,this.width,this.height);
+        const info = new gameInfomation(this.title,screenRectangle,
+                                        this.maxFps,this.currentFps);
+        const input = this._inputReciver.getInput();
+        this.currentScene.update(info,input);
+
+        requestAnimationFrame(this._loop.bind(this));
+
+    }
+}
+
